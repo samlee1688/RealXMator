@@ -1,0 +1,130 @@
+import pandas as pd  
+#import numpy as np  
+#import matplotlib.pyplot as plt  
+from sklearn.model_selection import train_test_split 
+from sklearn.linear_model import LinearRegression
+from sklearn import metrics
+import pickle
+import os
+from os import path
+from sklearn.datasets import make_regression
+from sklearn.linear_model import RidgeCV
+from sklearn.compose import TransformedTargetRegressor
+from sklearn.datasets import fetch_openml
+from sklearn.preprocessing import QuantileTransformer, quantile_transform
+from sklearn.metrics import median_absolute_error, r2_score
+#from sklearn.utils.fixes import parse_version
+from sklearn.preprocessing import PolynomialFeatures  
+#%matplotlib inline
+
+
+class realXMator:
+
+    singleModel = pickle.load(open('xMator-single.model', 'rb'))
+    condoModel = pickle.load(open('xMator-condo.model', 'rb'))
+    
+
+    def __init__(self, file):
+        
+        self.poly_regs= PolynomialFeatures(degree= 2)
+        
+        
+
+
+    def xtrain(self, propTest, modelFile):
+        modelFileExists=path.exists(modelFile)
+        if modelFileExists is True:
+            model = pickle.load(open(modelFile, 'rb'))
+            print('used exisiting')
+            return model
+        
+        self.df = pd.read_csv(file)
+        print('new created')
+        X = self.df[['date','age','size']].values.reshape(-1,3)
+        y = self.df['price'].values.reshape(-1,1)
+        
+        model = LinearRegression()
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=propTest, random_state=101)
+        model.fit(X_train,y_train)
+        pickle.dump(model, open(modelFile, 'wb'))
+        return model
+	
+    def train(self, modelFile):
+        modelFileExists=path.exists(modelFile)
+        if modelFileExists is True:
+            model = pickle.load(open(modelFile, 'rb'))
+            #print('used exisiting')
+            return model
+    
+        #print('new created')
+        self.df = pd.read_csv(file)
+        X = self.df[['date','age','size']].values.reshape(-1,3)
+        y = self.df['price'].values.reshape(-1,1)
+         
+        x_poly= self.poly_regs.fit_transform(X)  
+        
+        model =LinearRegression()  
+        model.fit(x_poly, y)  
+    
+        #model = TransformedTargetRegressor(
+                                        #regressor=RidgeCV(),
+                                        #transformer=QuantileTransformer(n_quantiles=900,
+                                       # output_distribution='normal'))
+        #model = TransformedTargetRegressor(regressor=LinearRegression(),transformer=QuantileTransformer(n_quantiles=900,output_distribution='normal'),func=np.exp, inverse_func=np.log)
+        #model.fit(X, y)
+    
+        #pred = model.predict(X_test)
+        pickle.dump(model, open(modelFile, 'wb'))
+        return model
+    
+    def pred(self, testData, propType):
+        if len(testData) == 3:
+            if propType.find("single")!=-1 :
+                model = self.singleModel
+            else:
+                model = self.condoModel
+            predictions = model.predict(self.poly_regs.fit_transform([testData]))
+            
+            #predictions = model.predict([testData])
+            return predictions
+        else:
+            return []
+            
+    def predBasedOnPrice(self, price, testData):
+        if len(testData) == 3:
+            print('i in predict' + str(price))
+            intp = int(price)
+            if intp < 199999:
+              model = self.train(0.2, 'C:\\AI\\realxmator\\xMator-1.model')
+            elif intp < 299999:
+              model = self.train(0.2, 'C:\\AI\\realxmator\\xMator-2.model')
+            elif intp < 399999:
+              model = self.train(0.2, 'C:\\AI\\realxmator\\xMator-3.model')
+            elif intp < 499999:
+              model = self.train(0.2, 'C:\\AI\\realxmator\\xMator-4.model')  
+            elif intp < 599999:
+              model = self.train(0.2, 'C:\\AI\\realxmator\\xMator-5.model')
+            elif intp < 699999:
+              model = self.train(0.2, 'C:\\AI\\realxmator\\xMator-6.model')
+            else:
+              model = self.train(0.2, 'C:\\AI\\realxmator\\xMator-7.model')
+            
+            predictions = model.predict([testData])
+            return predictions
+        else:
+            return []
+
+	#def chart(self, pred):
+	
+if __name__ == "__main__":
+    xMator0 = realXMator('C:\\dave\\realxmator\\single-xmator.csv')
+    model = xMator0.train('C:\\dave\\realxmator\\xMator-single.model')
+
+
+
+#print('MAE ',metrics.mean_absolute_error(y_test**2,pred))
+#print('MSE ', metrics.mean_squared_error(y_test**2,pred))
+#print('RMSE ',np.sqrt(metrics.mean_squared_error(y_test**2,pred)))
+
+
+
