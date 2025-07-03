@@ -10,7 +10,6 @@ class realXMator:
     singleModel = pickle.load(open('xMator-single.model', 'rb'))
     condoModel = pickle.load(open('xMator-condo.model', 'rb'))
     
-
     def __init__(self):        
         self.poly_regs= PolynomialFeatures(degree= 2)
 

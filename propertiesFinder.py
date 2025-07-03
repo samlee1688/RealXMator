@@ -121,13 +121,16 @@ class PropertiesFinder:
 
     def getAddressInfoByRealtorKeywords(self, keywords):
         keywords = keywords.replace(" ","+")
-        responseX = self.sendRequestEx(self.googleConn, "/search?q=realtor+"+keywords+"+sq.+ft+built") 
+        print("Realtor keywords: "+keywords)
+        responseX = self.sendRequestEx(self.googleConn, "/search?q={site:realtor.com+"+keywords+"+sq.+ft+built}") 
         response=str(responseX)
+        print("Realtor response: "+response)
         dataInfo = []    
         # "https://www.realtor.com/realestateandhomes-detail/900-Bristlewood-Dr_McKinney_TX_75072_M80385-79749"
         index1 = response.find('realtor.com/')        
         
         if index1 != -1:
+            print("Realtor index1: "+str(index1))
             response = response[index1:]
             address = response[:response.find('"')].split('/')[2]
             address = address[:address.find("&amp")]
